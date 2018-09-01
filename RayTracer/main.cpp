@@ -23,11 +23,11 @@ typedef uint8_t byte;
 
 /**
 * Follows the test described by Real Time Rendering 3rd-edition.
-* For now, this does not compute the points of intersection.
 * Assumes that Ray r has a normalized direction vector.
+* Side-effect: places the most positive t in isect_t if intersection occurs.
 * TODO: change to the optimized test.
 */
-bool intersects_shpere(const Vector3f& center, float radius, const Ray &r) {
+bool intersects_shpere(const Vector3f& center, float radius, const Ray &r, float &isect_t) {
 	Vector3f oc = r.origin() - center;
 
 	float c = oc.dot(oc) - pow(radius, 2);
@@ -35,7 +35,11 @@ bool intersects_shpere(const Vector3f& center, float radius, const Ray &r) {
 	float discriminant = pow(b, 2) - c;
 
 	// Gives true if distcriminant = 0.0f
-	return (discriminant + FLT_EPSILON > 0.0f );
+	if (discriminant + FLT_EPSILON > 0.0f) {
+		isect_t = -b - sqrt(discriminant);
+		return true;
+	}
+	return false;
 }
 
 
@@ -45,10 +49,15 @@ bool intersects_shpere(const Vector3f& center, float radius, const Ray &r) {
 * Assumes normalized Ray direction vector.
 **/
 Vector3f color(const Ray &r) {
-	if (intersects_shpere(Vector3f(0, 0, -1), 0.5f, r)) {
-		return Vector3f(1, 0, 0);
+	Vector3f shpere_center = Vector3f(0, 0, -1);
+	float t;
+	if (intersects_shpere(shpere_center, 0.5f, r, t)) {
+		Vector3f normal = Vector3f(r.point_at_parameter(t) - shpere_center).normalized();
+		return 0.5*Vector3f(normal.x()+1, normal.y()+1, normal.z()+1);
 	}
-	float t = 0.5f*(r.direction().y() + 1.0f);
+
+	//No intersection. Give background color instead
+	t = 0.5f*(r.direction().y() + 1.0f);
 	return (1.0f - t)*Vector3f(1.0f, 1.0f, 1.0f) + t * Vector3f(0.5f, 0.7f, 1.0f);
 }
 
@@ -82,7 +91,7 @@ int main() {
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch4.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch5.1.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 	delete[] rgb_image;
 }
