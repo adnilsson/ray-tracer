@@ -19,10 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HitableList.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ray.h" />
+    <ClInclude Include="Hitable.h" />
+    <ClInclude Include="HitableList.h" />
+    <ClInclude Include="Ray.h" />
+    <ClInclude Include="Sphere.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
