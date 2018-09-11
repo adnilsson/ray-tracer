@@ -17,8 +17,10 @@
 using Eigen::Vector3f;
 #endif 
 
+#include <random>
 #include "Sphere.h"
 #include "HitableList.h"
+#include "Camera.h"
 
 typedef uint8_t byte;
 
@@ -40,10 +42,15 @@ Vector3f color(const Ray &r, Hitable *world) {
 
 
 int main() {
-	constexpr int RGB_CHANNELS = 3;
-	int nx = 200;
-	int ny = 100;
+	const int RGB_CHANNELS = 3;
+	const int nx = 200;
+	const int ny = 100;
+	const int ns = 100;
 	byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
 	Vector3f lower_left_corner(-2.0f, -1.0f, -1.0f);
 	Vector3f origin(0.0f, 0.0f, 0.0f); // center of the image plane
@@ -58,26 +65,33 @@ int main() {
 	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100);
 	HitableList *world = new HitableList(list, n_hitables);
 
+	Camera cam;
+
 	int i = 0;
 	for (int iy = 0; iy < ny; iy++) {
 		for (int ix = 0; ix < nx; ix++) {
-			float u = float(ix) / float(nx);
-			float v = float(ny - iy - 1) / float(ny);
-			Ray r(origin, lower_left_corner + u*horizontal + v*vertical);
-			r.normalize_direction();
+			Vector3f c(0, 0, 0);
+			for (int is = 0; is < ns ; is++) {
+				float u = (float(ix) + dist(gen)) / float(nx);
+				float v = (float(ny - iy - 1) + dist(gen)) / float(ny);
+				Ray r = cam.get_ray(u, v);
+				r.normalize_direction();
 
-			Vector3f p = r.point_at_parameter(2.0);
-			Vector3f c = color(r, world)*255.99f;
-			rgb_image[i] = byte(c.x());
-			rgb_image[i + 1] = byte(c.y());
-			rgb_image[i + 2] = byte(c.z());
+				//Vector3f p = r.point_at_parameter(2.0);
+				c += color(r, world);
+			}
+			
+			c /= float(ns);
+			rgb_image[i] = byte(c.x() * 255.99);
+			rgb_image[i + 1] = byte(c.y() * 255.99);
+			rgb_image[i + 2] = byte(c.z() * 255.99);
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch5.2.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch6.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
 	delete[] rgb_image;
-	delete world; //ows its list of Hitables and deletes them in its destructor
+	delete world; //owns its list of Hitables and deletes them in its destructor
 }
