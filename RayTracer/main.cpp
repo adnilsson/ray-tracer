@@ -24,15 +24,33 @@ using Eigen::Vector3f;
 
 typedef uint8_t byte;
 
+// Globals
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+
+
+/** 
+* The returned vector originates from the centre of the sphere
+* and is not normalized.
+**/
+Vector3f sample_unit_sphere() {
+	Vector3f p;
+	do {
+		p = 2.0f * Vector3f(dist(gen), dist(gen), dist(gen)) - Vector3f(1,1,1);
+	} while(p.squaredNorm() >= 1.0f);
+	return p;
+}
+
 /**
-* Gives a color that is linerarly interpolated between white and 
-* blue-ish based on the direction of the ray.
+* Recursively trace rays with the geometry until background is hit.
 * Assumes normalized Ray direction vector.
 **/
 Vector3f color(const Ray &r, Hitable *world) {
 	hit_record rec;
 	if (world -> hit(r, 0.0, FLT_MAX, rec)) {
-		return 0.5*Vector3f(rec.normal.x()+1, rec.normal.y()+1, rec.normal.z()+1);
+		Vector3f target = rec.p + rec.normal + sample_unit_sphere();
+		return 0.5*color(Ray(rec.p, (target - rec.p).normalized()), world);
 	}
 
 	//No intersection. Give background color instead
@@ -48,9 +66,6 @@ int main() {
 	const int ns = 100;
 	byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
 
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
 	Vector3f lower_left_corner(-2.0f, -1.0f, -1.0f);
 	Vector3f origin(0.0f, 0.0f, 0.0f); // center of the image plane
@@ -88,7 +103,7 @@ int main() {
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch6.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch7.1.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
