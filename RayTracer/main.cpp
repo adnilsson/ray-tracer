@@ -48,7 +48,7 @@ Vector3f sample_unit_sphere() {
 **/
 Vector3f color(const Ray &r, Hitable *world) {
 	hit_record rec;
-	if (world -> hit(r, 0.0, FLT_MAX, rec)) {
+	if (world -> hit(r, 0.0f + FLT_EPSILON, FLT_MAX, rec)) {
 		Vector3f target = rec.p + rec.normal + sample_unit_sphere();
 		return 0.5*color(Ray(rec.p, (target - rec.p).normalized()), world);
 	}
@@ -97,13 +97,13 @@ int main() {
 			}
 			
 			c /= float(ns);
-			rgb_image[i] = byte(c.x() * 255.99);
-			rgb_image[i + 1] = byte(c.y() * 255.99);
-			rgb_image[i + 2] = byte(c.z() * 255.99);
+			rgb_image[i] = byte(sqrt(c.x()) * 255.99);
+			rgb_image[i + 1] = byte(sqrt(c.y()) * 255.99);
+			rgb_image[i + 2] = byte(sqrt(c.z()) * 255.99);
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch7.1.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch7.2.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
