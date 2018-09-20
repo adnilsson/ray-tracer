@@ -17,43 +17,31 @@
 using Eigen::Vector3f;
 #endif 
 
-#include <random>
 #include "Sphere.h"
 #include "HitableList.h"
 #include "Camera.h"
+#include "Material.h"
+#include "utils.h"
 
 typedef uint8_t byte;
-
-// Globals
-std::random_device rd;
-std::mt19937 gen(rd());
-std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-
-
-/** 
-* The returned vector originates from the centre of the sphere
-* and is not normalized.
-**/
-Vector3f sample_unit_sphere() {
-	Vector3f p;
-	do {
-		p = 2.0f * Vector3f(dist(gen), dist(gen), dist(gen)) - Vector3f(1,1,1);
-	} while(p.squaredNorm() >= 1.0f);
-	return p;
-}
 
 /**
 * Recursively trace rays with the geometry until background is hit.
 * Assumes normalized Ray direction vector.
 **/
-Vector3f color(const Ray &r, Hitable *world) {
+Vector3f color(const Ray &r, Hitable *world, int depth) {
 	hit_record rec;
 	if (world -> hit(r, 0.0f + FLT_EPSILON, FLT_MAX, rec)) {
-		Vector3f target = rec.p + rec.normal + sample_unit_sphere();
-		return 0.5*color(Ray(rec.p, (target - rec.p).normalized()), world);
+    Ray scatter_ray;
+    Vector3f attenuation;
+    if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scatter_ray)) {
+      return attenuation.cwiseProduct(color(scatter_ray, world, depth + 1));
+    }
+    
+    return Vector3f(0, 0, 0);
 	}
 
-	//No intersection. Give background color instead
+	//No intersection. Give background color instead.
 	float t = 0.5f*(r.direction().y() + 1.0f);
 	return (1.0f - t)*Vector3f(1.0f, 1.0f, 1.0f) + t * Vector3f(0.5f, 0.7f, 1.0f);
 }
@@ -76,8 +64,8 @@ int main() {
 
 	const unsigned int n_hitables = 2;
 	Hitable *list[n_hitables];
-	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5);
-	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100);
+	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.8f, 0.3f, 0.3f)));
+	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8f, 0.8f, 0.0f)));
 	HitableList *world = new HitableList(list, n_hitables);
 
 	Camera cam;
@@ -87,13 +75,13 @@ int main() {
 		for (int ix = 0; ix < nx; ix++) {
 			Vector3f c(0, 0, 0);
 			for (int is = 0; is < ns ; is++) {
-				float u = (float(ix) + dist(gen)) / float(nx);
-				float v = (float(ny - iy - 1) + dist(gen)) / float(ny);
+				float u = (float(ix) + utils::randf()) / float(nx);
+				float v = (float(ny - iy - 1) + utils::randf()) / float(ny);
 				Ray r = cam.get_ray(u, v);
 				r.normalize_direction();
 
 				//Vector3f p = r.point_at_parameter(2.0);
-				c += color(r, world);
+				c += color(r, world, 0);
 			}
 			
 			c /= float(ns);
@@ -103,7 +91,7 @@ int main() {
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch7.2.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch8.1.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
