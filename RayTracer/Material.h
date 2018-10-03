@@ -7,6 +7,11 @@ struct hit_record;
 #include "Hitable.h"
 #include "utils.h"
 
+#ifndef EIGENH
+#define EIGENH
+#include <Eigen/Core>
+#endif 
+
 class Material {
   public:
     virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector3f &attenuation, Ray &scattered) const = 0;
@@ -19,6 +24,7 @@ class Lambertian : public Material {
 
     Lambertian(const Eigen::Vector3f a) : albedo(a) {}
     virtual ~Lambertian() {}
+    
     /**
     * Always scatter in a random direction and attenuate by albedo.
     **/
@@ -30,5 +36,19 @@ class Lambertian : public Material {
     }
 };
 
+
+class Metal : public Material {
+  public:
+    Eigen::Vector3f albedo;
+
+    Metal(const Eigen::Vector3f a) : albedo(a) {}
+
+    virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector3f &attenuation, Ray &scattered) const {
+      Eigen::Vector3f reflected = utils::reflect(r_in.direction(), rec.normal);
+      scattered = Ray(rec.p, reflected);
+      attenuation = albedo;
+      return (scattered.direction().dot(rec.normal) > 0.0f + FLT_EPSILON);
+    }
+};
 
 #endif // !MATERIALH

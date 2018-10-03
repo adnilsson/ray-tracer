@@ -19,4 +19,8 @@ namespace utils {
     } while (p.squaredNorm() >= 1.0f);
     return p;
   }
+
+  Eigen::Vector3f reflect(const Eigen::Vector3f &v, const Eigen::Vector3f &n) {
+    return v - 2 * v.dot(n)*n;
+  }
 }

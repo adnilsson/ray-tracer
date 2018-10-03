@@ -16,6 +16,8 @@ namespace utils{
   * and is not normalized.
   **/
   Eigen::Vector3f sample_unit_sphere();
+
+  Eigen::Vector3f reflect(const Eigen::Vector3f &v, const Eigen::Vector3f &n);
 }
 
 

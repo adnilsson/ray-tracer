@@ -48,24 +48,26 @@ Vector3f color(const Ray &r, Hitable *world, int depth) {
 
 
 int main() {
-	const int RGB_CHANNELS = 3;
-	const int nx = 200;
-	const int ny = 100;
-	const int ns = 100;
-	byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
+  const int RGB_CHANNELS = 3;
+  const int nx = 200;
+  const int ny = 100;
+  const int ns = 100;
+  byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
 
 
-	Vector3f lower_left_corner(-2.0f, -1.0f, -1.0f);
-	Vector3f origin(0.0f, 0.0f, 0.0f); // center of the image plane
+  Vector3f lower_left_corner(-2.0f, -1.0f, -1.0f);
+  Vector3f origin(0.0f, 0.0f, 0.0f); // center of the image plane
 
-	// Vectors that span the whole image plane
-	Vector3f horizontal(4.0f, 0.0f, 0.0f);
-	Vector3f vertical(0.0f, 2.0f, 0.0f);
+  // Vectors that span the whole image plane
+  Vector3f horizontal(4.0f, 0.0f, 0.0f);
+  Vector3f vertical(0.0f, 2.0f, 0.0f);
 
-	const unsigned int n_hitables = 2;
-	Hitable *list[n_hitables];
-	list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.8f, 0.3f, 0.3f)));
-	list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8f, 0.8f, 0.0f)));
+  const unsigned int n_hitables = 4;
+  Hitable *list[n_hitables];
+  list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.8f, 0.3f, 0.3f)));
+  list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8f, 0.8f, 0.0f)));
+  list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8f, 0.6f, 0.2f)));
+  list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Metal(Vector3f(0.8f, 0.8f, 0.8f)));
 	HitableList *world = new HitableList(list, n_hitables);
 
 	Camera cam;
