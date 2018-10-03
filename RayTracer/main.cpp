@@ -66,8 +66,8 @@ int main() {
   Hitable *list[n_hitables];
   list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.8f, 0.3f, 0.3f)));
   list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8f, 0.8f, 0.0f)));
-  list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8f, 0.6f, 0.2f)));
-  list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Metal(Vector3f(0.8f, 0.8f, 0.8f)));
+  list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8f, 0.6f, 0.2f), 1.0f));
+  list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Metal(Vector3f(0.8f, 0.8f, 0.8f), 0.3f));
 	HitableList *world = new HitableList(list, n_hitables);
 
 	Camera cam;
@@ -82,7 +82,6 @@ int main() {
 				Ray r = cam.get_ray(u, v);
 				r.normalize_direction();
 
-				//Vector3f p = r.point_at_parameter(2.0);
 				c += color(r, world, 0);
 			}
 			
@@ -93,7 +92,7 @@ int main() {
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch8.1.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch8.2.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
