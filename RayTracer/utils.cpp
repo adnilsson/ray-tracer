@@ -23,4 +23,15 @@ namespace utils {
   Eigen::Vector3f reflect(const Eigen::Vector3f &v, const Eigen::Vector3f &n) {
     return v - 2 * v.dot(n)*n;
   }
+
+  bool refract(const Eigen::Vector3f &v, const Eigen::Vector3f &n, float ni_over_nt, Eigen::Vector3f &refracted) {
+    Eigen::Vector3f v_unit = v.normalized();
+    float dt = v_unit.dot(n);
+    float discriminant = 1.0f -  ni_over_nt*ni_over_nt * (1.0f - dt*dt);
+    if (discriminant > 0.0f) {
+      refracted = ni_over_nt*(v_unit - n*dt) - n*sqrt(discriminant);
+      return true;
+    }
+    return false;
+  }
 }
