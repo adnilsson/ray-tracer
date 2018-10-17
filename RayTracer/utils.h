@@ -19,6 +19,8 @@ namespace utils{
 
   Eigen::Vector3f reflect(const Eigen::Vector3f &v, const Eigen::Vector3f &n);
   bool refract(const Eigen::Vector3f &v, const Eigen::Vector3f &n, float ni_over_nt, Eigen::Vector3f &refracted);
+
+  float schlick(float cosine, float ref_idx);
 }
 
 

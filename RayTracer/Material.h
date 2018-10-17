@@ -60,31 +60,38 @@ public:
   Dielectric(float ri) : refractive_index(ri) { }
 
   virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector3f &attenuation, Ray &scattered) const {
-    Eigen::Vector3f outward_normal, refracted;
+    Eigen::Vector3f outward_normal, refracted, reflected;
     attenuation = Eigen::Vector3f(1.0f, 1.0f, 1.0f);
-    float ni_over_nt;
+    float ni_over_nt, reflect_prob, cosine;
 
     if (r_in.direction().dot(rec.normal) > 0.0f + FLT_EPSILON) {
       // refract from this medium to air 
       outward_normal = -rec.normal;
       ni_over_nt = refractive_index; // (refractive_index / 1.0)
+      cosine = refractive_index * r_in.direction().dot(rec.normal) / r_in.direction().norm();
     }
     else {
       // refract from air into this medium
       outward_normal = rec.normal;
       ni_over_nt = 1.0f / refractive_index; 
+      cosine = -(r_in.direction().dot(rec.normal) / r_in.direction().norm());
     }
 
     if (utils::refract(r_in.direction(), outward_normal, ni_over_nt, refracted)) {
-      scattered = Ray(rec.p, refracted);
+      reflect_prob = utils::schlick(cosine, refractive_index);
+      //scattered = Ray(rec.p, refracted);
     }
     else {
-      /* we store normals approximately normalized from the Sphere intersection
-         test, so re-normalizing makes a difference. */
-      Eigen::Vector3f reflected = utils::reflect(r_in.direction(), rec.normal.normalized());
-      scattered = Ray(rec.p, reflected);
+      reflect_prob = 1.0f;
     }
 
+    if (utils::randf() < reflect_prob) {
+      reflected = utils::reflect(r_in.direction(), rec.normal);
+      scattered = Ray(rec.p, reflected);
+    }
+    else {
+      scattered = Ray(rec.p, refracted);
+    }
     return true;
   }
 };
