@@ -26,8 +26,8 @@ namespace utils {
 
   bool refract(const Eigen::Vector3f &v, const Eigen::Vector3f &n, float ni_over_nt, Eigen::Vector3f &refracted) {
     Eigen::Vector3f v_unit = v.normalized();
-    /* should be cos(theta_i), but I think this is 
-       cos(theta_i + pi/2) = sin(theta_i) since in this 
+    /* dt should be cos(theta_i), but the dot product is 
+       cos(pi - theta_i) = -cos(theta_i) since in this 
        implementation v points to the surface, not outwards.
     */
     float dt = v_unit.dot(n);

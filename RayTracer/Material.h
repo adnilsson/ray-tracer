@@ -79,7 +79,6 @@ public:
 
     if (utils::refract(r_in.direction(), outward_normal, ni_over_nt, refracted)) {
       reflect_prob = utils::schlick(cosine, refractive_index);
-      //scattered = Ray(rec.p, refracted);
     }
     else {
       reflect_prob = 1.0f;
