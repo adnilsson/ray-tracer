@@ -68,7 +68,7 @@ int main() {
 	Camera cam(Vector3f(-2.0f,2.0f,1.0f)
            , Vector3f(0.0f, 0.0f, -1.0f)
            , Vector3f(0.0f, 1.0f, 0.0f)
-           , 90, static_cast<float>(nx)/ static_cast<float>(ny));
+           , 20, static_cast<float>(nx)/ static_cast<float>(ny));
 
 	int i = 0;
 	for (int iy = 0; iy < ny; iy++) {
@@ -90,7 +90,7 @@ int main() {
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch10.2.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch10.3.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
