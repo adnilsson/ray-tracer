@@ -14,6 +14,7 @@
 #ifndef EIGENH
 #define EIGENH
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 using Eigen::Vector3f;
 #endif 
 
@@ -55,21 +56,19 @@ int main() {
   byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
 
 
-  Vector3f lower_left_corner(-2.0f, -1.0f, -1.0f);
-  Vector3f origin(0.0f, 0.0f, 0.0f); // center of the image plane
-
-  // Vectors that span the whole image plane
-  Vector3f horizontal(4.0f, 0.0f, 0.0f);
-  Vector3f vertical(0.0f, 2.0f, 0.0f);
-
-  const unsigned int n_hitables = 2;
+  const unsigned int n_hitables = 5;
   Hitable *list[n_hitables];
-  const float R = cos(EIGEN_PI / 4);
-  list[0] = new Sphere(Vector3f(-R, 0, -1), R, new Lambertian(Vector3f(0.0f, 0.0f, 1.0f)));
-  list[1] = new Sphere(Vector3f(R, -0, -1), R, new Lambertian(Vector3f(1.0f, 0.0f, 0.0f)));
-	HitableList *world = new HitableList(list, n_hitables);
+  list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1f, 0.2f, 0.5f)));
+  list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8f, 0.8f, 0.0f)));
+  list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8f, 0.6f, 0.2f), 0));
+  list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
+  list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
+  HitableList *world = new HitableList(list, n_hitables);
 
-	Camera cam(90, static_cast<float>(nx)/ static_cast<float>(ny));
+	Camera cam(Vector3f(-2.0f,2.0f,1.0f)
+           , Vector3f(0.0f, 0.0f, -1.0f)
+           , Vector3f(0.0f, 1.0f, 0.0f)
+           , 90, static_cast<float>(nx)/ static_cast<float>(ny));
 
 	int i = 0;
 	for (int iy = 0; iy < ny; iy++) {
@@ -91,7 +90,7 @@ int main() {
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch10.1.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch10.2.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
