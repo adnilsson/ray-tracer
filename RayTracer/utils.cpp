@@ -20,6 +20,14 @@ namespace utils {
     return p;
   }
 
+  Eigen::Vector3f sample_unit_disk() {
+    Eigen::Vector3f p;
+    do {
+      p = 2.0f*Eigen::Vector3f(randf(), randf(), 0) - Eigen::Vector3f(1, 1, 0);
+    } while (p.dot(p) >= 1.0f);
+    return p;
+  }
+
   Eigen::Vector3f reflect(const Eigen::Vector3f &v, const Eigen::Vector3f &n) {
     return v - 2 * v.dot(n)*n;
   }

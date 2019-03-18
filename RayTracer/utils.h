@@ -16,6 +16,13 @@ namespace utils{
   * and is not normalized.
   **/
   Eigen::Vector3f sample_unit_sphere();
+  
+  /**
+  * Sample the unit square until we get a vector that fits in
+  * the unit disk.
+  **/
+  Eigen::Vector3f sample_unit_disk();
+
 
   Eigen::Vector3f reflect(const Eigen::Vector3f &v, const Eigen::Vector3f &n);
   bool refract(const Eigen::Vector3f &v, const Eigen::Vector3f &n, float ni_over_nt, Eigen::Vector3f &refracted);

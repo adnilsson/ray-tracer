@@ -52,7 +52,7 @@ int main() {
   const int RGB_CHANNELS = 3;
   const int nx = 200;
   const int ny = 100;
-  const int ns = 1000;
+  const int ns = 100;
   byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
 
 
@@ -65,10 +65,14 @@ int main() {
   list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
   HitableList *world = new HitableList(list, n_hitables);
 
-	Camera cam(Vector3f(-2.0f,2.0f,1.0f)
-           , Vector3f(0.0f, 0.0f, -1.0f)
-           , Vector3f(0.0f, 1.0f, 0.0f)
-           , 20, static_cast<float>(nx)/ static_cast<float>(ny));
+  Vector3f lookfrom   = Vector3f(3.0f, 3.0f, 2.0f);
+  Vector3f lookat     = Vector3f(0.0f, 0.0f, -1.0f);
+  float dist_to_focus = (lookfrom - lookat).norm();
+  float aperture      = 2.0f;
+  float vfov          = 20.0f;
+	Camera cam(lookfrom, lookat, Vector3f(0.0f, 1.0f, 0.0f), vfov
+            , static_cast<float>(nx)/ static_cast<float>(ny)
+            , aperture, dist_to_focus);
 
 	int i = 0;
 	for (int iy = 0; iy < ny; iy++) {
@@ -90,7 +94,7 @@ int main() {
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch10.3.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch11.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
