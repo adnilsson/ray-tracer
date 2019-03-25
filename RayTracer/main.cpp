@@ -48,27 +48,54 @@ Vector3f color(const Ray &r, Hitable *world, int depth) {
 }
 
 
+/**
+* 
+**/
+Hitable *random_scene() {
+  int n = 500;
+  Hitable **list = new Hitable*[n+1];
+  list[0] = new Sphere(Vector3f(0,-1000,0), 1000, new Lambertian(Vector3f(0.5, 0.5, 0.5)));
+  
+  int i = 1;
+  for (int a = -11; a < 11; a++) {
+    for (int b = -11; b < 11; b++) {
+      float choose_mat = utils::randf();
+      Vector3f center(a + 0.9*utils::randf(), 0.2, b + 0.9*utils::randf());
+      if ((center - Vector3f(4, 0.2, 0)).norm() > 0.9) {
+        if (choose_mat < 0.8) { // choose diffuse material
+          list[i++] = new Sphere(center, 0.2, new Lambertian(Vector3f(utils::randf()*utils::randf(), utils::randf()*utils::randf(), utils::randf()*utils::randf())));
+        }
+        else if (choose_mat < 0.95) { // choose metal material
+          list[i++] = new Sphere(center, 0.2, new Metal(Vector3f(0.5*(1 + utils::randf()), 0.5*(1 + utils::randf()), 0.5*(1 + utils::randf())), 0.5*(1 + utils::randf())));
+        }
+        else { //choose glass material
+          list[i++] = new Sphere(center, 0.2, new Dielectric(1.5));
+        }
+      }
+    }
+  }
+
+  list[i++] = new Sphere(Vector3f(0, 1, 0), 1.0, new Dielectric(1.5));
+  list[i++] = new Sphere(Vector3f(-4, 1, 0), 1.0, new Lambertian(Vector3f(0.4, 0.2, 0.1)));
+  list[i++] = new Sphere(Vector3f(4, 1, 0), 1.0, new Metal(Vector3f(0.7, 0.6, 0.5), 0.0));
+
+  return new HitableList(list, i);
+}
+
 int main() {
   const int RGB_CHANNELS = 3;
-  const int nx = 200;
-  const int ny = 100;
-  const int ns = 100;
+  const int nx = 1920;
+  const int ny = 1080;
+  const int ns = 1000;
   byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
 
 
-  const unsigned int n_hitables = 5;
-  Hitable *list[n_hitables];
-  list[0] = new Sphere(Vector3f(0, 0, -1), 0.5, new Lambertian(Vector3f(0.1f, 0.2f, 0.5f)));
-  list[1] = new Sphere(Vector3f(0, -100.5, -1), 100, new Lambertian(Vector3f(0.8f, 0.8f, 0.0f)));
-  list[2] = new Sphere(Vector3f(1, 0, -1), 0.5, new Metal(Vector3f(0.8f, 0.6f, 0.2f), 0));
-  list[3] = new Sphere(Vector3f(-1, 0, -1), 0.5, new Dielectric(1.5));
-  list[4] = new Sphere(Vector3f(-1, 0, -1), -0.45, new Dielectric(1.5));
-  HitableList *world = new HitableList(list, n_hitables);
+  Hitable *world = random_scene();
 
-  Vector3f lookfrom   = Vector3f(3.0f, 3.0f, 2.0f);
-  Vector3f lookat     = Vector3f(0.0f, 0.0f, -1.0f);
-  float dist_to_focus = (lookfrom - lookat).norm();
-  float aperture      = 2.0f;
+  Vector3f lookfrom   = Vector3f(13.0f, 2.0f, 3.0f);
+  Vector3f lookat     = Vector3f(0.0f, 0.0f, 0.0f);
+  float dist_to_focus = 10.0f;
+  float aperture      = 0.1f;
   float vfov          = 20.0f;
 	Camera cam(lookfrom, lookat, Vector3f(0.0f, 1.0f, 0.0f), vfov
             , static_cast<float>(nx)/ static_cast<float>(ny)
@@ -94,7 +121,7 @@ int main() {
 			i += RGB_CHANNELS;
 		}
 	}
-	stbi_write_png("ch11.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
+	stbi_write_png("ch12.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
 	// de-allocation 
