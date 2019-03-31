@@ -46,7 +46,10 @@ class Metal : public Material {
 
     virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector3f &attenuation, Ray &scattered) const {
       Eigen::Vector3f reflected = utils::reflect(r_in.direction(), rec.normal);
-      scattered = Ray(rec.p, reflected + fuzz*utils::sample_unit_sphere());
+      Eigen::Vector3f scatter_dir = reflected + fuzz*utils::sample_unit_sphere();
+      scatter_dir.normalize();
+
+      scattered = Ray(rec.p, scatter_dir);
       attenuation = albedo;
       return (scattered.direction().dot(rec.normal) > 0.0f + FLT_EPSILON);
     }
@@ -86,9 +89,11 @@ public:
 
     if (utils::randf() < reflect_prob) {
       reflected = utils::reflect(r_in.direction(), rec.normal);
+      reflected.normalize();
       scattered = Ray(rec.p, reflected);
     }
     else {
+      refracted.normalize();
       scattered = Ray(rec.p, refracted);
     }
     return true;
