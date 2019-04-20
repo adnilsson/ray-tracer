@@ -82,9 +82,9 @@ Hitable *random_scene() {
 
 int main() {
   const int RGB_CHANNELS = 3;
-  const int nx = 600;
-  const int ny = 400;
-  const int ns = 100;
+  const int nx = 1920;
+  const int ny = 1080;
+  const int ns = 1000;
   byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
 
 
