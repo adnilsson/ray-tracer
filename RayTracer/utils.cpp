@@ -8,6 +8,7 @@ namespace utils {
   std::mt19937 gen(rd());
   std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
+
   float randf() {
     return dist(gen);
   }
@@ -34,10 +35,7 @@ namespace utils {
 
   bool refract(const Eigen::Vector3f &v, const Eigen::Vector3f &n, float ni_over_nt, Eigen::Vector3f &refracted) {
     Eigen::Vector3f v_unit = v.normalized();
-    /* dt should be cos(theta_i), but the dot product is 
-       cos(pi - theta_i) = -cos(theta_i) since in this 
-       implementation v points to the surface, not outwards.
-    */
+
     float dt = v_unit.dot(n);
   
     float discriminant = 1.0f -  ni_over_nt*ni_over_nt * (1.0f - dt*dt); // < 0 if total internal reflection occurs.

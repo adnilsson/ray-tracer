@@ -25,6 +25,7 @@ using Eigen::Vector3f;
 #include "utils.h"
 
 typedef uint8_t byte;
+#define T_MIN utils::EPSILON
 
 /**
 * Recursively trace rays with the geometry until background is hit.
@@ -32,13 +33,13 @@ typedef uint8_t byte;
 **/
 Vector3f color(const Ray &r, Hitable *world, int depth) {
 	hit_record rec;
-	if (world -> hit(r, 0.0f + FLT_EPSILON, FLT_MAX, rec)) {
+	if (world -> hit(r, T_MIN, FLT_MAX, rec)) {
     Ray scatter_ray;
     Vector3f attenuation;
     if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scatter_ray)) {
       return attenuation.cwiseProduct(color(scatter_ray, world, depth + 1));
     }
-    
+
     return Vector3f(0, 0, 0);
 	}
 

@@ -8,6 +8,7 @@
 #endif 
 
 namespace utils{
+  constexpr auto EPSILON = 1.0e-4;
 
   float randf();
 
