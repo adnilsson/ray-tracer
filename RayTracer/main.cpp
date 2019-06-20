@@ -25,8 +25,6 @@ using Eigen::Vector3f;
 #include "utils.h"
 
 #include <array>
-#include <functional>
-#include <numeric>
 #include <execution>
 
 
@@ -135,14 +133,14 @@ int main() {
     std::array<int, nx> all_x; 
     std::iota(all_x.begin(), all_x.end(), 0);
     
-    //colors for each pixel
+    //colors for each x-pixel in this row
     std::array<Vector3f, nx> all_colors; 
-    auto tracer = std::bind(pixel_color, cam, world, nx, ny, std::placeholders::_1, iy);
-    std::for_each(std::execution::par,             //for_each guarantees in-order execution
+    auto tracer = [&all_colors, &cam, &world, nx, ny, iy](auto ix) {  //update all_colors as a side effect
+      all_colors[ix] = pixel_color(cam, world, nx, ny, ix, iy);
+    };
+    std::for_each(std::execution::par,        //for_each guarantees in-order execution
                   all_x.begin(), all_x.end(), 
-                  [tracer, &all_colors](auto i) {  //update all_colors as a side effect
-                      all_colors[i] = tracer(i);
-                  });
+                  tracer);
 
     //record traced colors
     for (auto pixel : all_colors) {
