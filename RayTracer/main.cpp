@@ -25,6 +25,8 @@ using Eigen::Vector3f;
 #include "utils.h"
 
 #include <array>
+#include <chrono>
+#include <iostream>
 #include <execution>
 
 
@@ -32,7 +34,7 @@ typedef uint8_t byte;
 #define T_MIN utils::EPSILON
 
 constexpr int RGB_CHANNELS = 3;
-constexpr int ns           = 10;
+constexpr int ns           = 100;
 
 
 /**
@@ -110,11 +112,10 @@ Vector3f pixel_color(const Camera &cam, Hitable *world, int nx, int ny, int ix, 
 }
 
 int main() {
-  const int nx = 600;
-  const int ny = 300;
+  const int nx = 1920;
+  const int ny = 1080;
 
   byte *rgb_image = new byte[nx*ny*RGB_CHANNELS];
-
 
   Hitable *world = random_scene();
 
@@ -127,6 +128,8 @@ int main() {
     , static_cast<float>(nx) / static_cast<float>(ny)
     , aperture, dist_to_focus);
 
+  std::cout << "Starting..." << std::endl;
+  auto t1 = std::chrono::high_resolution_clock::now();
   int i = 0;
   for (int iy = 0; iy < ny; iy++) {
     //enumerate this pixel row
@@ -150,6 +153,11 @@ int main() {
       i += RGB_CHANNELS;
     }
   }
+  auto t2 = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+  
+  std::cout << duration << " ms" << std::endl;
+
   stbi_write_png("ch12.png", nx, ny, RGB_CHANNELS, rgb_image, 0);
 
 
