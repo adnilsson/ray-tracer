@@ -10,14 +10,14 @@
 
 class Camera {
 	public:
-		Eigen::Vector3f origin;
-		Eigen::Vector3f lower_left_corner;
-		Eigen::Vector3f horizontal;
-		Eigen::Vector3f vertical;
-    Eigen::Vector3f u, v, w; // ortonormal basis vectors 
+		Eigen::Vector4f origin;
+		Eigen::Vector4f lower_left_corner;
+		Eigen::Vector4f horizontal;
+		Eigen::Vector4f vertical;
+    Eigen::Vector4f u, v, w; // ortonormal basis vectors 
     float lens_radius;
 
-		Camera(Eigen::Vector3f lookfrom, Eigen::Vector3f lookat, Eigen::Vector3f vup
+		Camera(Eigen::Vector4f lookfrom, Eigen::Vector4f lookat, Eigen::Vector4f vup
          , float vfov, float aspect_ratio, float aperture, float focus_dist) {
       lens_radius = aperture / 2;
       float theta = vfov * EIGEN_PI/180; // vfov in degrees
@@ -26,8 +26,8 @@ class Camera {
       
 			origin = lookfrom;
       w = (lookfrom - lookat).normalized(); // remember, the camera looks down -w
-      u = vup.cross(w).normalized();
-      v = w.cross(u).normalized();
+      u = vup.cross3(w).normalized();
+      v = w.cross3(u).normalized();
 
 			lower_left_corner = origin + focus_dist*(-half_width*u - half_height*v - w);
 			horizontal = 2*half_width*focus_dist*u;
@@ -36,8 +36,8 @@ class Camera {
 		~Camera() {};
 
 		Ray get_ray(float s, float t) const {
-      Eigen::Vector3f rd = lens_radius * utils::sample_unit_disk();
-      Eigen::Vector3f offset = u*rd.x()  + v*rd.y();
+      Eigen::Vector4f rd = lens_radius * utils::sample_unit_disk();
+      Eigen::Vector4f offset = u*rd.x()  + v*rd.y();
 			return Ray(origin + offset, lower_left_corner + s*horizontal + t*vertical - origin - offset);
 		}
 };

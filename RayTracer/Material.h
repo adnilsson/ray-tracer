@@ -14,22 +14,22 @@ struct hit_record;
 
 class Material {
   public:
-    virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector3f &attenuation, Ray &scattered) const = 0;
+    virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector4f &attenuation, Ray &scattered) const = 0;
 };
 
 
 class Lambertian : public Material {
   public: 
-    Eigen::Vector3f albedo; // "reflectiveness" 
+    Eigen::Vector4f albedo; // "reflectiveness" 
 
-    Lambertian(const Eigen::Vector3f a) : albedo(a) {}
+    Lambertian(const Eigen::Vector4f a) : albedo(a) {}
     virtual ~Lambertian() {}
     
     /**
     * Always scatter in a random direction and attenuate by albedo.
     **/
-    virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector3f &attenuation, Ray &scattered) const{
-      Eigen::Vector3f target = rec.p + rec.normal + utils::sample_unit_sphere();
+    virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector4f &attenuation, Ray &scattered) const{
+      Eigen::Vector4f target = rec.p + rec.normal + utils::sample_unit_sphere();
       scattered = Ray(rec.p, (target - rec.p).normalized());
       attenuation = albedo;
       return true;
@@ -39,14 +39,14 @@ class Lambertian : public Material {
 
 class Metal : public Material {
   public:
-    Eigen::Vector3f albedo;
+    Eigen::Vector4f albedo;
     float fuzz;
 
-    Metal(const Eigen::Vector3f a, float f) : albedo(a) { fuzz =  f < 1.0f ? f : 1.0f; }
+    Metal(const Eigen::Vector4f a, float f) : albedo(a) { fuzz =  f < 1.0f ? f : 1.0f; }
 
-    virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector3f &attenuation, Ray &scattered) const {
-      Eigen::Vector3f reflected = utils::reflect(r_in.direction(), rec.normal);
-      Eigen::Vector3f scatter_dir = reflected + fuzz*utils::sample_unit_sphere();
+    virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector4f &attenuation, Ray &scattered) const {
+      Eigen::Vector4f reflected = utils::reflect(r_in.direction(), rec.normal);
+      Eigen::Vector4f scatter_dir = reflected + fuzz*utils::sample_unit_sphere();
       scatter_dir.normalize();
 
       scattered = Ray(rec.p, scatter_dir);
@@ -62,9 +62,9 @@ public:
 
   Dielectric(float ri) : refractive_index(ri) { }
 
-  virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector3f &attenuation, Ray &scattered) const {
-    Eigen::Vector3f outward_normal, refracted, reflected;
-    attenuation = Eigen::Vector3f(1.0f, 1.0f, 1.0f);
+  virtual bool scatter(const Ray &r_in, const hit_record &rec, Eigen::Vector4f &attenuation, Ray &scattered) const {
+    Eigen::Vector4f outward_normal, refracted, reflected;
+    attenuation = Eigen::Vector4f(1.0f, 1.0f, 1.0f, 0.0f);
     float ni_over_nt, reflect_prob, cosine;
 
     if (r_in.direction().dot(rec.normal) > 0.0f + FLT_EPSILON) {

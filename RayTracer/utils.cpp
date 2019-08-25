@@ -13,28 +13,28 @@ namespace utils {
     return dist(gen);
   }
 
-  Eigen::Vector3f sample_unit_sphere() {
-    Eigen::Vector3f p;
+  Eigen::Vector4f sample_unit_sphere() {
+    Eigen::Vector4f p;
     do {
-      p = 2.0f * Eigen::Vector3f(randf(), randf(), randf()) - Eigen::Vector3f(1, 1, 1);
+      p = 2.0f * Eigen::Vector4f(randf(), randf(), randf(), 0.0f) - Eigen::Vector4f(1, 1, 1, 0);
     } while (p.squaredNorm() >= 1.0f);
     return p;
   }
 
-  Eigen::Vector3f sample_unit_disk() {
-    Eigen::Vector3f p;
+  Eigen::Vector4f sample_unit_disk() {
+    Eigen::Vector4f p;
     do {
-      p = 2.0f*Eigen::Vector3f(randf(), randf(), 0) - Eigen::Vector3f(1, 1, 0);
+      p = 2.0f*Eigen::Vector4f(randf(), randf(), 0, 0) - Eigen::Vector4f(1, 1, 0, 0);
     } while (p.dot(p) >= 1.0f);
     return p;
   }
 
-  Eigen::Vector3f reflect(const Eigen::Vector3f &v, const Eigen::Vector3f &n) {
+  Eigen::Vector4f reflect(const Eigen::Vector4f &v, const Eigen::Vector4f &n) {
     return v - 2 * v.dot(n)*n;
   }
 
-  bool refract(const Eigen::Vector3f &v, const Eigen::Vector3f &n, float ni_over_nt, Eigen::Vector3f &refracted) {
-    Eigen::Vector3f v_unit = v.normalized();
+  bool refract(const Eigen::Vector4f &v, const Eigen::Vector4f &n, float ni_over_nt, Eigen::Vector4f &refracted) {
+    Eigen::Vector4f v_unit = v.normalized();
 
     float dt = v_unit.dot(n);
   

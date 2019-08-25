@@ -15,7 +15,6 @@
 #define EIGENH
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-using Eigen::Vector3f;
 #endif 
 
 #include "Sphere.h"
@@ -36,45 +35,52 @@ typedef uint8_t byte;
 constexpr int RGB_CHANNELS = 3;
 constexpr int ns           = 100;
 
+using Eigen::Vector4f;
 
 /**
 * Recursively trace rays with the geometry until background is hit.
 * Assumes normalized Ray direction vector.
 **/
-Vector3f color(const Ray &r, Hitable *world, int depth) {
+Vector4f color(const Ray &r, Hitable *world, int depth) {
   hit_record rec;
   if (world->hit(r, T_MIN, FLT_MAX, rec)) {
     Ray scatter_ray;
-    Vector3f attenuation;
+    Vector4f attenuation;
     if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scatter_ray)) {
       return attenuation.cwiseProduct(color(scatter_ray, world, depth + 1));
     }
 
-    return Vector3f(0, 0, 0);
+    return Vector4f(0, 0, 0, 0);
   }
 
   //No intersection. Give background color instead.
   float t = 0.5f*(r.direction().y() + 1.0f);
-  return (1.0f - t)*Vector3f(1.0f, 1.0f, 1.0f) + t * Vector3f(0.5f, 0.7f, 1.0f);
+  return (1.0f - t)*Vector4f(1.0f, 1.0f, 1.0f, 0.0f) + t * Vector4f(0.5f, 0.7f, 1.0f, 0.0f);
 }
 
 
 Hitable *random_scene() {
   int n = 500;
   Hitable **list = new Hitable*[n + 1];
-  list[0] = new Sphere(Vector3f(0, -1000, 0), 1000, new Lambertian(Vector3f(0.5, 0.5, 0.5)));
+  list[0] = new Sphere(Vector4f(0, -1000, 0, 0), 1000, new Lambertian(Vector4f(0.5, 0.5, 0.5, 0.0f)));
 
   int i = 1;
   for (int a = -11; a < 11; a++) {
     for (int b = -11; b < 11; b++) {
       float choose_mat = utils::randf();
-      Vector3f center(a + 0.9*utils::randf(), 0.2, b + 0.9*utils::randf());
-      if ((center - Vector3f(4, 0.2, 0)).norm() > 0.9) {
+      Vector4f center(a + 0.9*utils::randf(), 0.2, b + 0.9*utils::randf(), 0.0f);
+      if ((center - Vector4f(4, 0.2, 0, 0)).norm() > 0.9) {
         if (choose_mat < 0.8) { // choose diffuse material
-          list[i++] = new Sphere(center, 0.2, new Lambertian(Vector3f(utils::randf()*utils::randf(), utils::randf()*utils::randf(), utils::randf()*utils::randf())));
+          list[i++] = new Sphere(center, 0.2, new Lambertian(Vector4f(utils::randf()*utils::randf(), 
+                                                                      utils::randf()*utils::randf(), 
+                                                                      utils::randf()*utils::randf(), 
+                                                                      0.0f)));
         }
         else if (choose_mat < 0.95) { // choose metal material
-          list[i++] = new Sphere(center, 0.2, new Metal(Vector3f(0.5*(1 + utils::randf()), 0.5*(1 + utils::randf()), 0.5*(1 + utils::randf())), 0.5*(1 + utils::randf())));
+          list[i++] = new Sphere(center, 0.2, new Metal(Vector4f(0.5*(1 + utils::randf()), 
+                                                                 0.5*(1 + utils::randf()), 
+                                                                 0.5*(1 + utils::randf()),
+                                                                 0.0f), 0.5*(1 + utils::randf())));
         }
         else { //choose glass material
           list[i++] = new Sphere(center, 0.2, new Dielectric(1.5));
@@ -83,9 +89,9 @@ Hitable *random_scene() {
     }
   }
 
-  list[i++] = new Sphere(Vector3f(0, 1, 0), 1.0, new Dielectric(1.5));
-  list[i++] = new Sphere(Vector3f(-4, 1, 0), 1.0, new Lambertian(Vector3f(0.4, 0.2, 0.1)));
-  list[i++] = new Sphere(Vector3f(4, 1, 0), 1.0, new Metal(Vector3f(0.7, 0.6, 0.5), 0.0));
+  list[i++] = new Sphere(Vector4f(0, 1, 0, 0), 1.0, new Dielectric(1.5));
+  list[i++] = new Sphere(Vector4f(-4, 1, 0, 0), 1.0, new Lambertian(Vector4f(0.4, 0.2, 0.1, 0)));
+  list[i++] = new Sphere(Vector4f(4, 1, 0, 0), 1.0, new Metal(Vector4f(0.7, 0.6, 0.5, 0), 0.0));
 
   return new HitableList(list, i);
 }
@@ -98,16 +104,17 @@ Ray sample_ray(const Camera &cam, const int nx, const int ny, const int ix, cons
   return r;
 }
 
-Vector3f pixel_color(const Camera &cam, Hitable *world, int nx, int ny, int ix, int iy) {
-  Vector3f final_color(0, 0, 0);
+Vector4f pixel_color(const Camera &cam, Hitable *world, int nx, int ny, int ix, int iy) {
+  Vector4f final_color(0, 0, 0, 0);
   for (int is = 0; is < ns; is++) {
     Ray r = sample_ray(cam, nx, ny, ix, iy);
     final_color += color(r, world, 0);
   }
   final_color /= float(ns);
-  final_color = Vector3f(sqrt(final_color.x()) * 255.99,
+  final_color = Vector4f(sqrt(final_color.x()) * 255.99,
                          sqrt(final_color.y()) * 255.99,
-                         sqrt(final_color.z()) * 255.99);
+                         sqrt(final_color.z()) * 255.99,
+                         0);
   return final_color;
 }
 
@@ -119,12 +126,12 @@ int main() {
 
   Hitable *world = random_scene();
 
-  Vector3f lookfrom = Vector3f(13.0f, 2.0f, 3.0f);
-  Vector3f lookat = Vector3f(0.0f, 0.0f, 0.0f);
+  Vector4f lookfrom = Vector4f(13.0f, 2.0f, 3.0f, 0.0f);
+  Vector4f lookat = Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
   float dist_to_focus = 10.0f;
   float aperture = 0.1f;
   float vfov = 20.0f;
-  Camera cam(lookfrom, lookat, Vector3f(0.0f, 1.0f, 0.0f), vfov
+  Camera cam(lookfrom, lookat, Vector4f(0.0f, 1.0f, 0.0f, 0.0f), vfov
     , static_cast<float>(nx) / static_cast<float>(ny)
     , aperture, dist_to_focus);
 
@@ -137,7 +144,7 @@ int main() {
     std::iota(all_x.begin(), all_x.end(), 0);
     
     //colors for each x-pixel in this row
-    std::array<Vector3f, nx> all_colors; 
+    std::array<Vector4f, nx> all_colors; 
     auto tracer = [&all_colors, &cam, &world, nx, ny, iy](auto ix) {  //update all_colors as a side effect
       all_colors[ix] = pixel_color(cam, world, nx, ny, ix, iy);
     };

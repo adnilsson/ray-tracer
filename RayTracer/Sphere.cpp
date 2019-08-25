@@ -9,7 +9,7 @@
 * (vector to point of intersetion, material) in rec.
 */
 bool Sphere::hit(const Ray &r, float t_min, float t_max, hit_record &rec) const {
-	Eigen::Vector3f oc =  center - r.origin();
+	Eigen::Vector4f oc =  center - r.origin();
   
   float s  = oc.dot(r.direction());
   float oc_squared_len = oc.dot(oc);
